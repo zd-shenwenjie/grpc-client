@@ -1,3 +1,9 @@
 [submodule "proto"]
 	path = proto
 	url = git@github.com:ZDAutomotive/zdbox2-grpc-proto.git
+[submodule "node/proto"]
+	path = node/proto
+	url = git@github.com:ZDAutomotive/zdbox2-grpc-proto.git
+[submodule "cpp/proto"]
+	path = cpp/proto
+	url = git@github.com:ZDAutomotive/zdbox2-grpc-proto.git

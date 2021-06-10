@@ -1,10 +1,10 @@
-import GrpcWorker from '../management/grpc.worker';
-import { GrpcSubscriberAdapter } from '../management/grpc.adapter';
+import GrpcWorker from './grpcWorker';
+import { GrpcSubscriberAdapter } from './grpcAdapter';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
-import { SERVICE_TYPE, SERVICE_TYPEMap } from '../../lib/proto/wrappers_pb';
-import { ZDServiceRequest } from '../../lib/proto/management_pb'
-import { YourRequestParameter } from '../../lib/proto/yourService_pb'
-import logger from '../../lib/utils/logger';
+import { SERVICE_TYPE, SERVICE_TYPEMap } from '../proto/wrappers_pb';
+import { ZDServiceRequest } from '../proto/management_pb'
+import { YourRequestParameter } from '../proto/yourService_pb'
+import logger from '../utils/logger';
 
 class ObserverAdapter extends GrpcSubscriberAdapter {
 

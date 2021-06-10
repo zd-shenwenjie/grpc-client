@@ -1,9 +1,9 @@
 import * as grpc from '@grpc/grpc-js';
-import { YourServiceManagerClient } from '../../lib/proto/yourService_grpc_pb';
+import { YourServiceManagerClient } from './proto/yourService_grpc_pb';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
-import { SERVICE_TYPE, ZDRequest, ZDResponse } from '../../lib/proto/wrappers_pb';
-import { YourRequestParameter, YourResponseParameter } from '../../lib/proto/yourService_pb';
-import logger from '../../lib/utils/logger';
+import { SERVICE_TYPE, ZDRequest, ZDResponse } from './proto/wrappers_pb';
+import { YourRequestParameter, YourResponseParameter } from './proto/yourService_pb';
+import logger from './utils/logger';
 
 const client = new YourServiceManagerClient('0.0.0.0:5000', grpc.credentials.createInsecure());
 sendAnyServiceReqToGrpcServer();

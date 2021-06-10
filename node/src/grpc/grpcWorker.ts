@@ -2,13 +2,13 @@
 import * as grpc from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
-import { ZDServiceSubscriber, ZDSubscriberStatus } from '../../lib/proto/management_pb';
-import { ServiceManagerClient } from '../../lib/proto/management_grpc_pb';
-import { ZDResponse } from '../../lib/proto/wrappers_pb';
-import { ZDServiceRequestResult } from '../../lib/proto/management_pb';
-import { GrpcProviderAdapter, GrpcSubscriberAdapter } from './grpc.adapter';
+import { ZDServiceSubscriber, ZDSubscriberStatus } from '../proto/management_pb';
+import { ServiceManagerClient } from '../proto/management_grpc_pb';
+import { ZDResponse } from '../proto/wrappers_pb';
+import { ZDServiceRequestResult } from '../proto/management_pb';
+import { GrpcProviderAdapter, GrpcSubscriberAdapter } from './grpcAdapter';
 import moment from 'moment';
-import logger from '../../lib/utils/logger';
+import logger from '../utils/logger';
 
 const TIME_KEEP_INTERAL = 30 * 1000;
 const TIME_RECONNECT_INTERAL = 10 * 1000;

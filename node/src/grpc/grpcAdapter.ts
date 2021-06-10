@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 /* tslint:disable max-classes-per-file */
-import { ZDServiceRequest, ZDServiceSubscriber, ZDService } from '../../lib/proto/management_pb';
-import { ZDServiceRequestResult } from '../../lib/proto/management_pb';
-import { SERVICE_TYPEMap } from '../../lib/proto/wrappers_pb';
+import { ZDServiceRequest, ZDServiceSubscriber, ZDService } from '../proto/management_pb';
+import { ZDServiceRequestResult } from '../proto/management_pb';
+import { SERVICE_TYPEMap } from '../proto/wrappers_pb';
 
 export abstract class GrpcSubscriberAdapter {
     abstract getSubscriberId(): string;

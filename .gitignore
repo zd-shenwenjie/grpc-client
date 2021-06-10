@@ -1,0 +1,4 @@
+/node/dist
+/node/node_modules
+/node/src/proto
+/node/package-lock.json
