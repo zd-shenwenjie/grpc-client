@@ -5,7 +5,7 @@ using typescripy + grpc
 #### Getting started
 - Clone the repository
 ```
-git@github.com:zd-shenwenjie/management.git
+git@github.com:zd-shenwenjie/grpc-client.git
 ```
 - Init submodule (proto)
 ```

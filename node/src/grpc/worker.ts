@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import * as grpc from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
@@ -6,7 +5,7 @@ import { ZDServiceSubscriber, ZDSubscriberStatus } from '../proto/management_pb'
 import { ServiceManagerClient } from '../proto/management_grpc_pb';
 import { ZDResponse } from '../proto/wrappers_pb';
 import { ZDServiceRequestResult } from '../proto/management_pb';
-import { GrpcProviderAdapter, GrpcSubscriberAdapter } from './grpcAdapter';
+import { GrpcProviderAdapter, GrpcSubscriberAdapter } from './adapter';
 import moment from 'moment';
 import logger from '../utils/logger';
 

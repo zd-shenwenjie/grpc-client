@@ -1,5 +1,5 @@
-import GrpcWorker from './grpcWorker';
-import { GrpcProviderAdapter } from './grpcAdapter';
+import GrpcWorker from '../grpc/worker';
+import { GrpcProviderAdapter } from '../grpc/adapter';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
 import { SERVICE_TYPE, SERVICE_TYPEMap, ZDResponse } from '../proto/wrappers_pb';
 import { ZDServiceRequest, ZDServiceRequestResult, ZDService } from '../proto/management_pb'
