@@ -1,4 +1,4 @@
-# Management
+# GRPC Client (Node)
 
 using typescripy + grpc
 
