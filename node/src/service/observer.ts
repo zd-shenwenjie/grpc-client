@@ -1,12 +1,11 @@
-import GrpcWorker from '../grpc/worker';
-import { GrpcSubscriberAdapter } from '../grpc/adapter';
+import { GrpcSubscriberAdaptee } from '../lib/grpc/adaptee';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
-import { SERVICE_TYPE, SERVICE_TYPEMap } from '../proto/wrappers_pb';
-import { ZDServiceRequest } from '../proto/management_pb'
-import { YourRequestParameter } from '../proto/yourService_pb'
-import logger from '../utils/logger';
+import { SERVICE_TYPE, SERVICE_TYPEMap } from '../lib/proto/wrappers_pb';
+import { ZDServiceRequest } from '../lib/proto/management_pb'
+import { YourRequestParameter } from '../lib/proto/yourService_pb'
+import logger from '../lib/utils/logger';
 
-class ObserverAdapter extends GrpcSubscriberAdapter {
+export default class Observer extends GrpcSubscriberAdaptee {
 
     public getSubscriberId(): string {
         return 'observer:9999';
@@ -49,11 +48,3 @@ class ObserverAdapter extends GrpcSubscriberAdapter {
     }
 
 }
-
-const woker = new GrpcWorker(new ObserverAdapter());
-woker.doWork();
-
-process.on('uncaughtException', (error: Error) => {
-    logger.info(`uncaughtException: ${error.message}`);
-    woker.stopWork();
-});

@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./dist/index.js",
+    "start:consumer": "node ./dist/index.js consumer",
+    "start:observer": "node ./dist/index.js observer",
+    "start:provider": "node ./dist/index.js provider",
     "build": "tsc",
     "build:proto": "./scripts/compile-proto.sh"
   },

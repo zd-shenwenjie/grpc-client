@@ -24,5 +24,7 @@ npm run build:proto
 ```
 npm install
 npm run build
-npm start
+npm run start:consumer
+npm run start:observer
+npm run start:provider
 ```

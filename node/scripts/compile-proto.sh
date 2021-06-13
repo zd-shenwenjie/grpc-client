@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-OUT_DIR="./src/"
+OUT_DIR="./src/lib"
 IN_DIR="./proto"
 PROTOC="$(npm bin)/grpc_tools_node_protoc"
 PROTOC_GEN_TS_PATH="$(npm bin)/protoc-gen-ts"

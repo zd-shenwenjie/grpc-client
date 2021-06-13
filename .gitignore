@@ -1,5 +1,5 @@
 /node/dist
 /node/node_modules
-/node/src/proto
 /node/package-lock.json
 /cpp/cmake
+/node/src/lib/proto

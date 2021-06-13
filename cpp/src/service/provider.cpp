@@ -1,22 +1,40 @@
 #include <iostream>
 #include "provider.h"
 
-string GrpcProvider ::getSubscriberId()
+Provider ::Provider()
 {
-    return "";
+    cout << "Provider" << endl;
 }
 
-string GrpcProvider ::getGrpcHost()
+Provider ::~Provider()
 {
-    return "";
+    cout << "~Provider" << endl;
 }
 
-int GrpcProvider ::getSubscriberServiceTypes()
+string Provider ::getSubscriberId() const
 {
-    return 0;
+    return "provider:8888";
 }
 
-string GrpcProvider ::getCurrentServiceStatus()
+string Provider ::getGrpcHost() const
 {
-    return "";
+    return "localhost:5000";
+}
+
+int* Provider ::getSubscriberServiceTypes() const
+{
+    static int arr[3] = {1,2,3};
+    return arr;
+}
+
+string* Provider ::getCurrentServiceStatus()const
+{
+    static string arr[3] = {"1","2","3"};
+    return arr;
+}
+
+string Provider::onSubscriberServiceRequest(string req)const
+{
+    cout << "Provider onSubscriberServiceRequest" << endl;
+    return req;
 }

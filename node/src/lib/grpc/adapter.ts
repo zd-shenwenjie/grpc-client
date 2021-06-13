@@ -5,7 +5,7 @@ import { ZDServiceSubscriber, ZDSubscriberStatus } from '../proto/management_pb'
 import { ServiceManagerClient } from '../proto/management_grpc_pb';
 import { ZDResponse } from '../proto/wrappers_pb';
 import { ZDServiceRequestResult } from '../proto/management_pb';
-import { GrpcProviderAdapter, GrpcSubscriberAdapter } from './adapter';
+import { GrpcProviderAdaptee, GrpcSubscriberAdaptee } from './adaptee';
 import moment from 'moment';
 import logger from '../utils/logger';
 
@@ -13,17 +13,23 @@ const TIME_KEEP_INTERAL = 30 * 1000;
 const TIME_RECONNECT_INTERAL = 10 * 1000;
 const TIME_DELAY_BIND = 15 * 1000;
 
-export default class GrpcWorker {
+export abstract class GrpcWorker {
+    abstract doWork(): void;
+    abstract stopWork(): void;
+}
 
-    private adapter: GrpcProviderAdapter | GrpcSubscriberAdapter;
+export class GrpcAdapter extends GrpcWorker {
+
+    private adaptee: GrpcProviderAdaptee | GrpcSubscriberAdaptee;
     private client: ServiceManagerClient;
     private keepAliveStream: grpc.ClientDuplexStream<ZDSubscriberStatus, ZDResponse> | undefined = undefined;
     private keepAliveHandler: NodeJS.Timeout | null = null;
     private isConnecting = false;
 
-    constructor(adapter: GrpcProviderAdapter | GrpcSubscriberAdapter) {
-        this.adapter = adapter;
-        const host: string = this.adapter.getGrpcHost();
+    constructor(adaptee: GrpcProviderAdaptee | GrpcSubscriberAdaptee) {
+        super();
+        this.adaptee = adaptee;
+        const host: string = this.adaptee.getGrpcHost();
         this.client = new ServiceManagerClient(host, grpc.credentials.createInsecure());
     }
 
@@ -50,7 +56,7 @@ export default class GrpcWorker {
             this.keepAliveHandler = null;
         }
         if (this.client) {
-            this.client.unregister(new StringValue().setValue(this.adapter.getSubscriberId()), (err, res) => {
+            this.client.unregister(new StringValue().setValue(this.adaptee.getSubscriberId()), (err, res) => {
                 if (!err && res) {
                     logger.info(res.getMessage());
                 }
@@ -60,18 +66,18 @@ export default class GrpcWorker {
 
     public sendSubscriberStatusToGrpcServer(): void {
         if (this.keepAliveStream) {
-            if (this.isGrpcProviderAdapter(this.adapter)) {
+            if (this.isGrpcProviderAdapter(this.adaptee)) {
                 const status: ZDSubscriberStatus = new ZDSubscriberStatus();
-                const servicesList = this.adapter.getCurrentServiceStatus();
-                status.setId(this.adapter.getSubscriberId());
+                const servicesList = this.adaptee.getCurrentServiceStatus();
+                status.setId(this.adaptee.getSubscriberId());
                 status.setServiceList(servicesList);
                 this.keepAliveStream.write(status);
-                logger.debug(`send provider: ${this.adapter.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                logger.debug(`send provider: ${this.adaptee.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
             } else {
                 const status: ZDSubscriberStatus = new ZDSubscriberStatus();
-                status.setId(this.adapter.getSubscriberId());
+                status.setId(this.adaptee.getSubscriberId());
                 this.keepAliveStream.write(status);
-                logger.debug(`send subscriber: ${this.adapter.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                logger.debug(`send subscriber: ${this.adaptee.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
             }
         }
     }
@@ -100,7 +106,7 @@ export default class GrpcWorker {
     }
 
     private sendPingReqToGrpcServer(): Promise<void> {
-        logger.debug(`send ping req to ${this.adapter.getGrpcHost()}`);
+        logger.debug(`send ping req to ${this.adaptee.getGrpcHost()}`);
         return new Promise<void>((resolve, reject) => {
             this.client.ping(new Empty(), (error) => {
                 if (error) {
@@ -114,17 +120,17 @@ export default class GrpcWorker {
     }
 
     private sendRegisterReqToGrpcServer(): Promise<void> {
-        logger.debug(`send register req to ${this.adapter.getGrpcHost()}`);
+        logger.debug(`send register req to ${this.adaptee.getGrpcHost()}`);
         return new Promise<void>((resolve, reject) => {
             if (this.client) {
                 const sub = new ZDServiceSubscriber();
-                sub.setId(this.adapter.getSubscriberId());
-                sub.setType(this.adapter.subscriberType);
-                sub.setServicetypeList(this.adapter.getSubscriberServiceTypes());
+                sub.setId(this.adaptee.getSubscriberId());
+                sub.setType(this.adaptee.subscriberType);
+                sub.setServicetypeList(this.adaptee.getSubscriberServiceTypes());
                 const stream = this.client.register(sub);
                 stream.on('data', (req) => {
-                    if (this.isGrpcProviderAdapter(this.adapter)) {
-                        const result: ZDServiceRequestResult | null = this.adapter.onSubscriberServiceRequest(req);
+                    if (this.isGrpcProviderAdapter(this.adaptee)) {
+                        const result: ZDServiceRequestResult | null = this.adaptee.onSubscriberServiceRequest(req);
                         if (result !== null) {
                             this.client.submitRequestResult(result, (err, res?) => {
                                 if (!err && res) {
@@ -133,7 +139,7 @@ export default class GrpcWorker {
                             });
                         }
                     } else {
-                        this.adapter.onSubscriberServiceRequest(req);
+                        this.adaptee.onSubscriberServiceRequest(req);
                     }
                 });
                 resolve();
@@ -184,7 +190,7 @@ export default class GrpcWorker {
         });
     }
 
-    private isGrpcProviderAdapter(adapter: GrpcProviderAdapter | GrpcSubscriberAdapter): adapter is GrpcProviderAdapter {
+    private isGrpcProviderAdapter(adapter: GrpcProviderAdaptee | GrpcSubscriberAdaptee): adapter is GrpcProviderAdaptee {
         return adapter.subscriberType === ZDServiceSubscriber.SUBSCRIBER_TYPE.PROVIDER;
     }
 }
