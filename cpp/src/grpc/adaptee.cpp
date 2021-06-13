@@ -1,6 +1,16 @@
 #include <iostream>
 #include "adaptee.h"
 
+GrpcAdaptee::GrpcAdaptee()
+{
+    cout << "GrpcAdaptee" << endl;
+}
+
+GrpcAdaptee::~GrpcAdaptee()
+{
+    cout << "~GrpcAdaptee" << endl;
+}
+
 GrpcSubscriberAdaptee::GrpcSubscriberAdaptee()
 {
     cout << "GrpcSubscriberAdaptee" << endl;
@@ -21,12 +31,12 @@ GrpcProviderAdaptee::~GrpcProviderAdaptee()
     cout << "~GrpcProviderAdaptee" << endl;
 }
 
-int GrpcSubscriberAdaptee::getSubscriberType()
+int GrpcSubscriberAdaptee::getSubscriberType() const
 {
     return 0;
 }
 
-int GrpcProviderAdaptee::getSubscriberType()
+int GrpcProviderAdaptee::getSubscriberType() const
 {
     return 1;
 }

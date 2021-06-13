@@ -1,5 +1,5 @@
-#ifndef GRPC_OBSERVER_H
-#define GRPC_OBSERVER_H
+#ifndef OBSERVER_H
+#define OBSERVER_H
 
 #include "../grpc/adaptee.h"
 

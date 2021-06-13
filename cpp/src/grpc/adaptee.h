@@ -4,27 +4,32 @@
 #include <string>
 using namespace std;
 
-class GrpcSubscriberAdaptee
+class GrpcAdaptee
+{
+public:
+    GrpcAdaptee();
+    virtual ~GrpcAdaptee();
+    virtual int getSubscriberType() const = 0;
+    virtual string getSubscriberId() const = 0;
+    virtual string getGrpcHost() const = 0;
+    virtual int *getSubscriberServiceTypes() const = 0;
+};
+
+class GrpcSubscriberAdaptee : public GrpcAdaptee
 {
 public:
     GrpcSubscriberAdaptee();
     virtual ~GrpcSubscriberAdaptee();
-    int getSubscriberType();
-    virtual string getSubscriberId() const = 0;
-    virtual string getGrpcHost() const = 0;
-    virtual int *getSubscriberServiceTypes() const = 0;
+    virtual int getSubscriberType() const;
     virtual void onSubscriberServiceRequest(string) const = 0;
 };
 
-class GrpcProviderAdaptee
+class GrpcProviderAdaptee : public GrpcAdaptee
 {
 public:
     GrpcProviderAdaptee();
     virtual ~GrpcProviderAdaptee();
-    int getSubscriberType();
-    virtual string getSubscriberId() const = 0;
-    virtual string getGrpcHost() const = 0;
-    virtual int *getSubscriberServiceTypes() const = 0;
+    virtual int getSubscriberType() const;
     virtual string *getCurrentServiceStatus() const = 0;
     virtual string onSubscriberServiceRequest(string) const = 0;
 };

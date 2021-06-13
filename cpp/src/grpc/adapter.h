@@ -1,8 +1,6 @@
 #ifndef GRPC_ADAPTER_H
 #define GRPC_ADAPTER_H
-
-#include "../service/observer.h"
-#include "../service/provider.h"
+#include "adaptee.h"
 
 using namespace std;
 
@@ -14,29 +12,16 @@ public:
     virtual void doWork() const = 0;
     virtual void stopWork() const = 0;
 };
-
-class GrpcObserverAdapter : public GrpcWorker
+class GrpcAdapter : public GrpcWorker
 {
 public:
-    GrpcObserverAdapter(Observer *);
-    ~GrpcObserverAdapter();
+    GrpcAdapter(GrpcAdaptee *);
+    ~GrpcAdapter();
     virtual void doWork() const;
     virtual void stopWork() const;
 
 private:
-    Observer *observer;
-};
-
-class GrpcProviderAdapter : public GrpcWorker
-{
-public:
-    GrpcProviderAdapter(Provider *);
-    ~GrpcProviderAdapter();
-    virtual void doWork() const;
-    virtual void stopWork() const;
-
-private:
-    Provider *provider;
+    GrpcAdaptee *adaptee;
 };
 
 #endif

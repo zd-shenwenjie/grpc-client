@@ -1,5 +1,7 @@
 #include <iostream>
 #include "adapter.h"
+#include "../service/observer.h"
+#include "../service/provider.h"
 
 GrpcWorker::GrpcWorker()
 {
@@ -11,54 +13,38 @@ GrpcWorker::~GrpcWorker()
     cout << "~GrpcWorker" << endl;
 }
 
-GrpcObserverAdapter::GrpcObserverAdapter(Observer *adaptee)
+GrpcAdapter::GrpcAdapter(GrpcAdaptee *p)
 {
-    observer = adaptee;
-    cout << "GrpcObserverAdapter" << endl;
+    cout << "GrpcAdapter" << endl;
+    adaptee = p;
 }
 
-GrpcObserverAdapter::~GrpcObserverAdapter()
+GrpcAdapter::~GrpcAdapter()
 {
-    cout << "~GrpcObserverAdapter" << endl;
+    cout << "~GrpcAdapter" << endl;
 }
 
-void GrpcObserverAdapter::doWork() const
+void GrpcAdapter::doWork() const
 {
     cout << "observer do work" << endl;
-    if (observer != NULL)
+    if (adaptee != NULL)
     {
-        cout << observer->getSubscriberType() << endl;
-        cout << observer->getSubscriberId() << endl;
+        cout << adaptee->getSubscriberType() << endl;
+        cout << adaptee->getSubscriberId() << endl;
+        int subscriberType = adaptee->getSubscriberType();
+        if (subscriberType)
+        {
+            string str = ((Provider *)adaptee)->onSubscriberServiceRequest("some req2");
+            cout << str << endl;
+        }
+        else
+        {
+            ((Observer *)adaptee)->onSubscriberServiceRequest("some req1");
+        }
     }
 }
 
-void GrpcObserverAdapter::stopWork() const
+void GrpcAdapter::stopWork() const
 {
     cout << "observer stop work" << endl;
-}
-
-GrpcProviderAdapter::GrpcProviderAdapter(Provider *adaptee)
-{
-    provider = adaptee;
-    cout << "GrpcProviderAdapter" << endl;
-}
-
-GrpcProviderAdapter::~GrpcProviderAdapter()
-{
-    cout << "~GrpcProviderAdapter" << endl;
-}
-
-void GrpcProviderAdapter::doWork() const
-{
-    cout << "provider do work" << endl;
-    if (provider != NULL)
-    {
-        cout << provider->getSubscriberType() << endl;
-        cout << provider->getSubscriberId() << endl;
-    }
-}
-
-void GrpcProviderAdapter::stopWork() const
-{
-    cout << "provider stop work" << endl;
 }

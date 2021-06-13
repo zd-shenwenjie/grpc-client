@@ -1,5 +1,6 @@
 #include <iostream>
-#include "grpc/adapter.h"
+#include "./grpc/adapter.h"
+#include "./grpc/adaptee.h"
 #include "./service/observer.h"
 #include "./service/provider.h"
 
@@ -9,19 +10,16 @@ int main()
 {
     cout << "Hello, world!" << endl;
 
-    Observer *observer = new Observer();
-    GrpcWorker * worker1 = new GrpcObserverAdapter(observer);
-    worker1->doWork();
-    worker1->stopWork();
-    delete worker1;
+    GrpcAdaptee *observer = new Observer();
+    // GrpcAdaptee *provider = new Provider();
+
+    GrpcWorker *worker = new GrpcAdapter(observer);
+    // GrpcWorker *worker = new GrpcAdapter(provider);
+    worker->doWork();
+    worker->stopWork();
+
+    delete worker;
     delete observer;
-
-    Provider *provider = new Provider();
-    GrpcWorker * worker2 = new GrpcProviderAdapter(provider);
-    worker2->doWork();
-    worker2->stopWork();
-    delete worker2;
-    delete provider;
-
+    // delete provider;
     return 0;
 }

@@ -3,3 +3,4 @@
 /node/package-lock.json
 /cpp/cmake
 /node/src/lib/proto
+/cpp/.vscode

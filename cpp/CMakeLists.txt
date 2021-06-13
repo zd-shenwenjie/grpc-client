@@ -80,15 +80,21 @@ add_library(example_grpc
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adaptee.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/src/grpc/worker.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/grpc/worker.cpp"
 )
+target_link_libraries(example_grpc
+  example_service
+)
+
 add_library(example_service
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.cpp"
 )
+target_link_libraries(example_service
+  example_grpc
+)
+
 add_executable(grpc-client "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 target_link_libraries(grpc-client 
   example_grpc

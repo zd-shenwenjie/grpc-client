@@ -1,5 +1,5 @@
-#ifndef GRPC_PROVIDER_H
-#define GRPC_PROVIDER_H
+#ifndef PROVIDER_H
+#define PROVIDER_H
 
 #include "../grpc/adaptee.h"
 
