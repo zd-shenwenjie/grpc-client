@@ -1,102 +1,128 @@
-# Copyright 2018 gRPC authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# cmake build file for C++ route_guide example.
-# Assumes protobuf and gRPC have been installed using cmake.
-# See cmake_externalproject/CMakeLists.txt for all-in-one cmake build
-# that automatically builds all the dependencies before building route_guide.
-
+# 指定cmake最小版本
 cmake_minimum_required(VERSION 3.5.1)
+# 设置项目名称
 project(RouteGuide C CXX)
+# grpc common cmake
 include(./common.cmake)
 
-# Proto file
-get_filename_component(rg_proto "${CMAKE_CURRENT_LIST_DIR}/proto/route_guide.proto" ABSOLUTE)
-get_filename_component(rg_proto_path "${rg_proto}" PATH)
+# 设置路径
+get_filename_component(wrappers_proto "${CMAKE_CURRENT_LIST_DIR}/proto/wrappers.proto" ABSOLUTE)
+get_filename_component(manager_proto "${CMAKE_CURRENT_LIST_DIR}/proto/manager.proto" ABSOLUTE)
+get_filename_component(networkif_proto "${CMAKE_CURRENT_LIST_DIR}/proto/networkif.proto" ABSOLUTE)
+get_filename_component(wrappers_proto_path "${wrappers_proto}" PATH)
+get_filename_component(manager_proto_path "${manager_proto}" PATH)
+get_filename_component(networkif_proto_path "${networkif_proto}" PATH)
 
-# Generated sources
-set(rg_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/route_guide.pb.cc")
-set(rg_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/route_guide.pb.h")
-set(rg_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/route_guide.grpc.pb.cc")
-set(rg_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/route_guide.grpc.pb.h")
+# 设置变量
+set(wrappers_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/wrappers.pb.cc")
+set(wrappers_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/wrappers.pb.h")
+set(wrappers_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/wrappers.grpc.pb.cc")
+set(wrappers_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/wrappers.grpc.pb.h")
+set(manager_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/manager.pb.cc")
+set(manager_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/manager.pb.h")
+set(manager_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/manager.grpc.pb.cc")
+set(manager_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/manager.grpc.pb.h")
+set(networkif_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/networkif.pb.cc")
+set(networkif_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/networkif.pb.h")
+set(networkif_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/networkif.grpc.pb.cc")
+set(networkif_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/networkif.grpc.pb.h")
+
+# 添加自定义命令
 add_custom_command(
-      OUTPUT "${rg_proto_srcs}" "${rg_proto_hdrs}" "${rg_grpc_srcs}" "${rg_grpc_hdrs}"
-      COMMAND ${_PROTOBUF_PROTOC}
-      ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
-        --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-        -I "${rg_proto_path}"
-        --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-        "${rg_proto}"
-      DEPENDS "${rg_proto}")
+  # 目标文件名称 OUTPUT output1 [output2 ...]
+  OUTPUT 
+    "${wrappers_proto_srcs}" 
+    "${wrappers_proto_hdrs}" 
+    "${wrappers_grpc_srcs}" 
+    "${wrappers_grpc_hdrs}"
+    "${manager_proto_srcs}" 
+    "${manager_proto_hdrs}" 
+    "${manager_grpc_srcs}" 
+    "${manager_grpc_hdrs}"
+    "${networkif_proto_srcs}" 
+    "${networkif_proto_hdrs}" 
+    "${networkif_grpc_srcs}" 
+    "${networkif_grpc_hdrs}"
+  # 需要执行的命令 COMMAND command1 [ARGS] [args1...]
+  COMMAND ${_PROTOBUF_PROTOC}
+  ARGS 
+    # 生成 C++ 头文件和源代码
+    --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
+    --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
+    # 查找 *.proto 文件的目录
+    --proto_path "${wrappers_proto_path}"
+    --proto_path "${manager_proto_path}"
+    --proto_path "${networkif_proto_path}"
+    --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
+    # 一个或多个 *.proto 文件
+    "${wrappers_proto}" "${manager_proto}" "${networkif_proto}"
+  # 执行命令时需要的依赖 [DEPENDS [depends...]]
+  DEPENDS "${wrappers_proto}" "${manager_proto}" "${networkif_proto}"
+)
 
-# Include generated *.pb.h files
+# 设置包含的目录 *.pb.h
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-# rg_grpc_proto
-add_library(rg_grpc_proto
-  ${rg_grpc_srcs}
-  ${rg_grpc_hdrs}
-  ${rg_proto_srcs}
-  ${rg_proto_hdrs})
-target_link_libraries(rg_grpc_proto
+# 生成静态库
+add_library(
+  grpc_proto
+  ${wrappers_proto_srcs}
+  ${wrappers_proto_hdrs}
+  ${wrappers_grpc_srcs}
+  ${wrappers_grpc_hdrs}
+  ${manager_proto_srcs}
+  ${manager_proto_hdrs}
+  ${manager_grpc_srcs}
+  ${manager_grpc_hdrs}
+  ${networkif_proto_srcs}
+  ${networkif_proto_hdrs}
+  ${networkif_grpc_srcs}
+  ${networkif_grpc_hdrs}
+)
+# 设置target需要链接的库
+target_link_libraries(
+  grpc_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-# route_guide_helper
-add_library(route_guide_helper
-  "${CMAKE_CURRENT_LIST_DIR}/src/route_guide/helper.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/route_guide/helper.cc")
-target_link_libraries(route_guide_helper
-  rg_grpc_proto
-  ${_REFLECTION}
-  ${_GRPC_GRPCPP}
-  ${_PROTOBUF_LIBPROTOBUF})
-
-# Targets route_guide_(client|server)
-# foreach(_target route_guide_client route_guide_server)
-#   add_executable(${_target} "${CMAKE_CURRENT_LIST_DIR}/src/route_guide/${_target}.cc")
-#   target_link_libraries(${_target}
-#     rg_grpc_proto
-#     route_guide_helper
-#     ${_REFLECTION}
-#     ${_GRPC_GRPCPP}
-#     ${_PROTOBUF_LIBPROTOBUF})
-# endforeach()
-
-add_library(example_grpc
+# 生成静态库
+add_library(
+  example_grpc
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adaptee.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adaptee.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.cpp"
 )
-target_link_libraries(example_grpc
+# 设置target需要链接的库
+target_link_libraries(
+  example_grpc 
   example_service
 )
 
-add_library(example_service
+ # 生成静态库
+add_library(
+  example_service
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.cpp"
 )
-target_link_libraries(example_service
+# 设置target需要链接的库
+target_link_libraries(
+  example_service 
   example_grpc
 )
 
+# 生成可执行文件
 add_executable(grpc-client "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
-target_link_libraries(grpc-client 
-  example_grpc
+# 设置target需要链接的库
+target_link_libraries(
+  grpc-client 
+  example_grpc 
   example_service
+  grpc_proto
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF}
 )
