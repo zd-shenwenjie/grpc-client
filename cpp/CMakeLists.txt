@@ -53,6 +53,7 @@ add_custom_command(
     --proto_path "${wrappers_proto_path}"
     --proto_path "${manager_proto_path}"
     --proto_path "${networkif_proto_path}"
+    # 设置插件
     --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
     # 一个或多个 *.proto 文件
     "${wrappers_proto}" "${manager_proto}" "${networkif_proto}"
@@ -63,7 +64,7 @@ add_custom_command(
 # 设置包含的目录 *.pb.h
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-# 生成静态库
+# 生成proto静态库
 add_library(
   grpc_proto
   ${wrappers_proto_srcs}
@@ -79,16 +80,16 @@ add_library(
   ${networkif_grpc_srcs}
   ${networkif_grpc_hdrs}
 )
-# 设置target需要链接的库
+# 设置proto需要链接的库
 target_link_libraries(
   grpc_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
 
-# 生成静态库
+# 生成adapter静态库
 add_library(
-  example_grpc
+  grpc_adapter
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adaptee.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adaptee.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.h"
@@ -96,22 +97,22 @@ add_library(
 )
 # 设置target需要链接的库
 target_link_libraries(
-  example_grpc 
-  example_service
+  grpc_adapter 
+  grpc_service
 )
 
- # 生成静态库
+ # 生成service静态库
 add_library(
-  example_service
+  grpc_service
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/observer.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/service/provider.cpp"
 )
-# 设置target需要链接的库
+# 设置service需要链接的库
 target_link_libraries(
-  example_service 
-  example_grpc
+  grpc_service 
+  grpc_adapter
 )
 
 # 生成可执行文件
@@ -119,8 +120,8 @@ add_executable(grpc-client "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 # 设置target需要链接的库
 target_link_libraries(
   grpc-client 
-  example_grpc 
-  example_service
+  grpc_adapter 
+  grpc_service
   grpc_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}

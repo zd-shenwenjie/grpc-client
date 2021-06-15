@@ -13,36 +13,45 @@ switch (mode) {
     case 'consumer': {
         // Use grpc-client as a consumer
         const client = new NetworkManagerClient('0.0.0.0:5000', grpc.credentials.createInsecure());
-        const filter: BlockFilter = new BlockFilter();
-        filter.setPhyid(123);
-        client.test(filter, (err, res) => {
-            if (!err && res) {
-                logger.info(res.getVlanid());
-            }
-        })
-        // const req = new ZDRequest();
-        // const data: Any = new Any();
-        // const args: YourRequestParameter = new YourRequestParameter();
-        // args.setNumber(123);
-        // data.pack(args.serializeBinary(), 'zdautomotive.protobuf.YourRequestParameter');
-        // req.setData(data);
-        // req.setType(SERVICE_TYPE.SERVICE_EXAMPLE_A);
-        // client.yourServiceRequestMethodA(req, (err, res) => {
+        // const filter: BlockFilter = new BlockFilter();
+        // filter.setPhyid(123);
+        // client.test(filter, (err, res) => {
         //     if (!err && res) {
-        //         const code: ZDResponse.ERROR_CODEMap[keyof ZDResponse.ERROR_CODEMap] = res.getCode();
-        //         const message: string = res.getMessage();
-        //         logger.info('code:', code, 'message:', message);
-        //         const anyData: Any | undefined = res.getData();
-        //         if (anyData) {
-        //             const result: YourResponseParameter | null = anyData.unpack(YourResponseParameter.deserializeBinary, 'zdautomotive.protobuf.YourResponseParameter');
-        //             if (result) {
-        //                 logger.info('data:', result.toString());
-        //             }
-        //         }
-        //     } else {
-        //         logger.info('error', err?.message);
+        //         logger.info(res.getVlanid());
         //     }
         // })
+        const req = new ZDRequest();
+        const data: Any = new Any();
+        const filter: BlockFilter = new BlockFilter();
+        filter.setPhyid(123);
+        filter.setVlanid(123);
+        filter.setSrcip('123');
+        filter.setDstip('123');
+        filter.setSrcport(123);
+        filter.setDstport(123);
+        data.pack(filter.serializeBinary(), 'zdautomotive.protobuf.BlockFilter');
+        req.setData(data);
+        req.setType(SERVICE_TYPE.SERVICE_EXAMPLE_A);
+        client.send(req, (err, res) => {
+            if (!err && res) {
+                const code: ZDResponse.ERROR_CODEMap[keyof ZDResponse.ERROR_CODEMap] = res.getCode();
+                const message: string = res.getMessage();
+                logger.info('code:', code, 'message:', message);
+                const anyData: Any | undefined = res.getData();
+                if (anyData) {
+                    const result: ProtocolTag | null = anyData.unpack(ProtocolTag.deserializeBinary, 'zdautomotive.protobuf.ProtocolTag');
+                    if (result) {
+                        logger.info('data:', result.getVlanid(), result.getSrcport(), result.getDstport(), result.getTag());
+                    } else {
+                        logger.info('unpack res any data is null.');
+                    }
+                } else {
+                    logger.info('res data is null.');
+                }
+            } else {
+                logger.info('error', err?.message);
+            }
+        })
         break;
     }
     case 'provider': {
