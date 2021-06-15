@@ -1,7 +1,10 @@
 # 指定cmake最小版本
 cmake_minimum_required(VERSION 3.5.1)
 # 设置项目名称
-project(RouteGuide C CXX)
+project(GRPC C CXX)
+# 指定为C++11 版本
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
 # grpc common cmake
 include(./common.cmake)
 
@@ -115,6 +118,13 @@ target_link_libraries(
   grpc_adapter
 )
 
+# 生成until静态库
+add_library(
+  until
+  "${CMAKE_CURRENT_LIST_DIR}/src/until/timer.h"
+  "${CMAKE_CURRENT_LIST_DIR}/src/until/timer.cpp"
+)
+
 # 生成可执行文件
 add_executable(grpc-client "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 # 设置target需要链接的库
@@ -123,6 +133,7 @@ target_link_libraries(
   grpc_adapter 
   grpc_service
   grpc_proto
+  until
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}

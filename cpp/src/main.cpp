@@ -11,10 +11,12 @@
 #include <grpcpp/create_channel.h>
 #include <grpcpp/security/credentials.h>
 #include "networkif.grpc.pb.h"
-// #include "./grpc/adapter.h"
-// #include "./grpc/adaptee.h"
-// #include "./service/observer.h"
-// #include "./service/provider.h"
+
+#include "./grpc/adapter.h"
+#include "./grpc/adaptee.h"
+#include "./service/observer.h"
+#include "./service/provider.h"
+#include "./until/timer.h"
 
 using namespace std;
 using google::protobuf::Any;
@@ -45,9 +47,13 @@ using zdautomotive::protobuf::ZDResponse;
 //     return true;
 // }
 
-int main()
+void helloworld()
 {
     cout << "Hello, world!" << endl;
+}
+
+int main()
+{
     std::shared_ptr<Channel> channel = grpc::CreateChannel("localhost:5000", grpc::InsecureChannelCredentials());
     std::unique_ptr<zdautomotive::protobuf::NetworkManager::Stub> stub_ = zdautomotive::protobuf::NetworkManager::NewStub(channel);
 
@@ -104,5 +110,14 @@ int main()
     // delete worker;
     // delete observer;
     // delete provider;
+
+    Timer t;
+    t.setInterval(helloworld, 1000);
+
+    // t.setTimeout([&]() {
+    //     cout << "Hey.. After 5.2s. But I will stop the timer!" << endl;
+    //     t.stop();
+    // }, 5200);
+    while (true) ; // Keep main thread active
     return 0;
 }
