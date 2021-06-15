@@ -1,8 +1,7 @@
 import { GrpcProviderAdaptee } from '../lib/grpc/adaptee';
 import { Any } from 'google-protobuf/google/protobuf/any_pb';
 import { SERVICE_TYPE, SERVICE_TYPEMap, ZDResponse } from '../lib/proto/wrappers_pb';
-import { ZDServiceRequest, ZDServiceRequestResult, ZDService } from '../lib/proto/management_pb'
-import { YourRequestParameter, YourResponseParameter } from '../lib/proto/yourService_pb'
+import { ZDServiceRequest, ZDServiceRequestResult, ZDService } from '../lib/proto/manager_pb'
 import logger from '../lib/utils/logger';
 
 export default class Provider extends GrpcProviderAdaptee {
@@ -54,23 +53,23 @@ export default class Provider extends GrpcProviderAdaptee {
         logger.info('receive req info:', req.getCreatetime(), req.getExpiretime(), req.getSession());
         const data: Any | undefined = req.getData();
         if (data) {
-            const args = data.unpack(YourRequestParameter.deserializeBinary, 'zdautomotive.protobuf.YourRequestParameter');
-            if (args) {
-                logger.info(JSON.stringify(args.toString()));
-                const result: ZDServiceRequestResult = new ZDServiceRequestResult();
-                const response: ZDResponse = new ZDResponse();
-                response.setCode(ZDResponse.ERROR_CODE.OK);
-                response.setMessage('example req success.');
-                const anyData: Any = new Any();
-                const parameter: YourResponseParameter = new YourResponseParameter();
-                parameter.setMessage('hello example!');
-                anyData.pack(parameter.serializeBinary(), 'zdautomotive.protobuf.YourResponseParameter');
-                req.setData(data);
-                response.setData(anyData);
-                result.setResponse(response);
-                result.setRequest(req);
-                return result;
-            }
+            // const args = data.unpack(YourRequestParameter.deserializeBinary, 'zdautomotive.protobuf.YourRequestParameter');
+            // if (args) {
+            //     logger.info(JSON.stringify(args.toString()));
+            //     const result: ZDServiceRequestResult = new ZDServiceRequestResult();
+            //     const response: ZDResponse = new ZDResponse();
+            //     response.setCode(ZDResponse.ERROR_CODE.OK);
+            //     response.setMessage('example req success.');
+            //     const anyData: Any = new Any();
+            //     const parameter: YourResponseParameter = new YourResponseParameter();
+            //     parameter.setMessage('hello example!');
+            //     anyData.pack(parameter.serializeBinary(), 'zdautomotive.protobuf.YourResponseParameter');
+            //     req.setData(data);
+            //     response.setData(anyData);
+            //     result.setResponse(response);
+            //     result.setRequest(req);
+            //     return result;
+            // }
         }
         return null;
     }

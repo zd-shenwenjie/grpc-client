@@ -1,5 +1,4 @@
-import { ZDServiceRequest, ZDServiceSubscriber, ZDService } from '../proto/management_pb';
-import { ZDServiceRequestResult } from '../proto/management_pb';
+import { ZDServiceRequest, ZDServiceSubscriber, ZDService, ZDServiceRequestResult } from '../proto/manager_pb';
 import { SERVICE_TYPEMap } from '../proto/wrappers_pb';
 
 abstract class GrpcAdaptee {

@@ -1,10 +1,9 @@
 import * as grpc from '@grpc/grpc-js';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { StringValue } from 'google-protobuf/google/protobuf/wrappers_pb';
-import { ZDServiceSubscriber, ZDSubscriberStatus } from '../proto/management_pb';
-import { ServiceManagerClient } from '../proto/management_grpc_pb';
+import { ZDServiceSubscriber, ZDSubscriberStatus, ZDServiceRequestResult } from '../proto/manager_pb';
+import { ServiceManagerClient } from '../proto/manager_grpc_pb';
 import { ZDResponse } from '../proto/wrappers_pb';
-import { ZDServiceRequestResult } from '../proto/management_pb';
 import { GrpcProviderAdaptee, GrpcSubscriberAdaptee } from './adaptee';
 import moment from 'moment';
 import logger from '../utils/logger';
@@ -56,7 +55,7 @@ export class GrpcAdapter extends GrpcWorker {
             this.keepAliveHandler = null;
         }
         if (this.client) {
-            this.client.unregister(new StringValue().setValue(this.adaptee.getSubscriberId()), (err, res) => {
+            this.client.unsubscribe(new StringValue().setValue(this.adaptee.getSubscriberId()), (err, res) => {
                 if (!err && res) {
                     logger.info(res.getMessage());
                 }
@@ -127,7 +126,7 @@ export class GrpcAdapter extends GrpcWorker {
                 sub.setId(this.adaptee.getSubscriberId());
                 sub.setType(this.adaptee.subscriberType);
                 sub.setServicetypeList(this.adaptee.getSubscriberServiceTypes());
-                const stream = this.client.register(sub);
+                const stream = this.client.subscribe(sub);
                 stream.on('data', (req) => {
                     if (this.isGrpcProviderAdapter(this.adaptee)) {
                         const result: ZDServiceRequestResult | null = this.adaptee.onSubscriberServiceRequest(req);
