@@ -2,8 +2,12 @@
 #define OBSERVER_H
 
 #include "../grpc/adaptee.h"
+#include "manager.grpc.pb.h"
 
 using namespace std;
+using zdautomotive::protobuf::SERVICE_TYPE;
+using zdautomotive::protobuf::ZDSubscriberStatus;
+using zdautomotive::protobuf::ZDServiceRequest;
 
 class Observer : public GrpcSubscriberAdaptee
 {
@@ -12,8 +16,8 @@ public:
      ~Observer();
      virtual string getSubscriberId() const;
      virtual string getGrpcHost() const;
-     virtual int *getSubscriberServiceTypes() const;
-     virtual void onSubscriberServiceRequest(string req) const;
+     virtual SERVICE_TYPE *getSubscriberServiceTypes() const;
+     virtual void onSubscriberServiceRequest(ZDServiceRequest& ) const;
 };
 
 #endif

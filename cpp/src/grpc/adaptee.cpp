@@ -31,12 +31,12 @@ GrpcProviderAdaptee::~GrpcProviderAdaptee()
     cout << "~GrpcProviderAdaptee" << endl;
 }
 
-int GrpcSubscriberAdaptee::getSubscriberType() const
+ZDServiceSubscriber_SUBSCRIBER_TYPE GrpcSubscriberAdaptee::getSubscriberType() const
 {
-    return 0;
+    return  ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER;
 }
 
-int GrpcProviderAdaptee::getSubscriberType() const
+ZDServiceSubscriber_SUBSCRIBER_TYPE GrpcProviderAdaptee::getSubscriberType() const
 {
-    return 1;
+    return  ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_OBSERVER;
 }

@@ -102,6 +102,11 @@ add_library(
 target_link_libraries(
   grpc_adapter 
   grpc_service
+  grpc_proto
+  until
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF}
 )
 
  # 生成service静态库

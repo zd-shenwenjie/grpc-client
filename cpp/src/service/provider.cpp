@@ -21,20 +21,19 @@ string Provider ::getGrpcHost() const
     return "localhost:5000";
 }
 
-int* Provider ::getSubscriberServiceTypes() const
+SERVICE_TYPE* Provider ::getSubscriberServiceTypes() const
 {
-    static int arr[3] = {1,2,3};
+    static SERVICE_TYPE arr[1] = {SERVICE_TYPE::SERVICE_SET_NETWORK};
     return arr;
 }
 
-string* Provider ::getCurrentServiceStatus()const
+ZDService* Provider ::getCurrentServiceStatus()const
 {
-    static string arr[3] = {"1","2","3"};
-    return arr;
+    return NULL;
 }
 
-string Provider::onSubscriberServiceRequest(string req)const
+ZDServiceRequestResult* Provider::onSubscriberServiceRequest(ZDServiceRequest& req)const
 {
     cout << "Provider onSubscriberServiceRequest" << endl;
-    return req;
+    return NULL;
 }

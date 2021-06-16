@@ -15,15 +15,15 @@ class Timer
 private:
     condition_variable cv;
     mutex mut;
-    atomic<bool> expired;
-    atomic<bool> tryToExpire;
+    atomic<bool> _expired;
+    atomic<bool> _try_to_expire;
 
 public:
     Timer();
     ~Timer();
     void setTimeout(std::function<void()>, int delay);
     void setInterval(std::function<void()>, int interval);
-    void stop();
+    void clearInterval();
 };
 
 #endif

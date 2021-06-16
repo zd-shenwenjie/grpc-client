@@ -21,13 +21,13 @@ string Observer::getGrpcHost() const
     return "localhost:5000";
 }
 
-int *Observer::getSubscriberServiceTypes() const
+SERVICE_TYPE *Observer::getSubscriberServiceTypes() const
 {
-    static int arr[3] = {1, 2, 3};
+    static SERVICE_TYPE arr[1] = {SERVICE_TYPE::SERVICE_SET_NETWORK};
     return arr;
 }
 
-void Observer::onSubscriberServiceRequest(string req) const
+void Observer::onSubscriberServiceRequest(ZDServiceRequest& req) const
 {
     cout << "Observer onSubscriberServiceRequest" << endl;
 }

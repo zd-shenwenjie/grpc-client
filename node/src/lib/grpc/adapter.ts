@@ -23,7 +23,7 @@ export class GrpcAdapter extends GrpcWorker {
     private client: ServiceManagerClient;
     private keepAliveStream: grpc.ClientDuplexStream<ZDSubscriberStatus, ZDResponse> | undefined = undefined;
     private keepAliveHandler: NodeJS.Timeout | null = null;
-    private isWaitForDoWorkAgain = false;
+    private isWaitForWorkAgain = false;
 
     constructor(adaptee: GrpcProviderAdaptee | GrpcSubscriberAdaptee) {
         super();
@@ -33,7 +33,7 @@ export class GrpcAdapter extends GrpcWorker {
     }
 
     public doWork(): void {
-        this.isWaitForDoWorkAgain = false;
+        this.isWaitForWorkAgain = false;
         this.sendPingReqToGrpcServer()
             .then(() => {
                 return this.sendRegisterReqToGrpcServer();
@@ -43,7 +43,7 @@ export class GrpcAdapter extends GrpcWorker {
                 this.waitForBindSubscriberCompleted(stream);
             }).catch((error: Error) => {
                 logger.debug('doWork err:' + error.message + moment().format('MMMM Do YYYY, h:mm:ss a'));
-                this.waitForDoWorkAgain();
+                this.waitForWorkAgain();
             })
 
     }
@@ -80,14 +80,14 @@ export class GrpcAdapter extends GrpcWorker {
         }
     }
 
-    private waitForDoWorkAgain(): void {
+    private waitForWorkAgain(): void {
         if (this.keepAliveHandler !== null) {
             clearInterval(this.keepAliveHandler);
             this.keepAliveHandler = null;
             logger.info('clear keep alive timer.');
         }
-        if (!this.isWaitForDoWorkAgain) {
-            this.isWaitForDoWorkAgain = true;
+        if (!this.isWaitForWorkAgain) {
+            this.isWaitForWorkAgain = true;
             setTimeout(() => {
                 this.doWork();
             }, TIME_RECONNECT_INTERAL);
@@ -144,7 +144,7 @@ export class GrpcAdapter extends GrpcWorker {
                 });
                 stream.on('error', (err) => {
                     logger.debug('grpc client register stream error:', err.message);
-                    this.waitForDoWorkAgain();
+                    this.waitForWorkAgain();
                 })
                 resolve();
             } else {
@@ -181,16 +181,16 @@ export class GrpcAdapter extends GrpcWorker {
                 this.onReceiveGrpcServerKeepAliveReply();
             } else {
                 logger.debug('grpc client keep alive bind error:' + response.getMessage());
-                this.waitForDoWorkAgain();
+                this.waitForWorkAgain();
             }
         });
         stream.on('error', (error) => {
             logger.debug('grpc client keep alive stream error.', error.message);
-            this.waitForDoWorkAgain();
+            this.waitForWorkAgain();
         });
         stream.on('end', () => {
             logger.debug('grpc client keep alive stream end.');
-            this.waitForDoWorkAgain();
+            this.waitForWorkAgain();
         });
     }
 
