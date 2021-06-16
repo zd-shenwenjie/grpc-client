@@ -8,7 +8,7 @@ import { GrpcProviderAdaptee, GrpcSubscriberAdaptee } from './adaptee';
 import moment from 'moment';
 import logger from '../utils/logger';
 
-const TIME_KEEP_INTERAL = 30 * 1000;
+const TIME_KEEP_INTERAL = 60 * 1000;
 const TIME_RECONNECT_INTERAL = 10 * 1000;
 const TIME_DELAY_BIND = 15 * 1000;
 
@@ -23,7 +23,7 @@ export class GrpcAdapter extends GrpcWorker {
     private client: ServiceManagerClient;
     private keepAliveStream: grpc.ClientDuplexStream<ZDSubscriberStatus, ZDResponse> | undefined = undefined;
     private keepAliveHandler: NodeJS.Timeout | null = null;
-    private isConnecting = false;
+    private isWaitForDoWorkAgain = false;
 
     constructor(adaptee: GrpcProviderAdaptee | GrpcSubscriberAdaptee) {
         super();
@@ -33,20 +33,19 @@ export class GrpcAdapter extends GrpcWorker {
     }
 
     public doWork(): void {
-        if (this.isConnecting === false) {
-            this.isConnecting = true;
-            this.sendPingReqToGrpcServer()
-                .then(() => {
-                    return this.sendRegisterReqToGrpcServer();
-                }).then(() => {
-                    return this.sendKeepAliveReqToGrpcServer();
-                }).then((stream) => {
-                    this.waitForBindSubscriberCompleted(stream);
-                }).catch((error: Error) => {
-                    logger.debug('doWork err:' + error.message + moment().format('MMMM Do YYYY, h:mm:ss a'));
-                    this.waitForDoWorkAgain();
-                })
-        }
+        this.isWaitForDoWorkAgain = false;
+        this.sendPingReqToGrpcServer()
+            .then(() => {
+                return this.sendRegisterReqToGrpcServer();
+            }).then(() => {
+                return this.sendKeepAliveReqToGrpcServer();
+            }).then((stream) => {
+                this.waitForBindSubscriberCompleted(stream);
+            }).catch((error: Error) => {
+                logger.debug('doWork err:' + error.message + moment().format('MMMM Do YYYY, h:mm:ss a'));
+                this.waitForDoWorkAgain();
+            })
+
     }
 
     public stopWork(): void {
@@ -71,32 +70,32 @@ export class GrpcAdapter extends GrpcWorker {
                 status.setId(this.adaptee.getSubscriberId());
                 status.setServiceList(servicesList);
                 this.keepAliveStream.write(status);
-                logger.debug(`send provider: ${this.adaptee.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                logger.debug(`send provider status (id:${this.adaptee.getSubscriberId()},service:${servicesList.toString()}) to server . ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
             } else {
                 const status: ZDSubscriberStatus = new ZDSubscriberStatus();
                 status.setId(this.adaptee.getSubscriberId());
                 this.keepAliveStream.write(status);
-                logger.debug(`send subscriber: ${this.adaptee.getSubscriberId()} status ${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
+                logger.debug(`send subscriber status (id:${this.adaptee.getSubscriberId()}) to server .${moment().format('MMMM Do YYYY, h:mm:ss a')}.`);
             }
         }
     }
 
     private waitForDoWorkAgain(): void {
-        this.isConnecting = false;
         if (this.keepAliveHandler !== null) {
             clearInterval(this.keepAliveHandler);
             this.keepAliveHandler = null;
             logger.info('clear keep alive timer.');
         }
-        setTimeout(() => {
-            this.doWork();
-        }, TIME_RECONNECT_INTERAL);
+        if (!this.isWaitForDoWorkAgain) {
+            this.isWaitForDoWorkAgain = true;
+            setTimeout(() => {
+                this.doWork();
+            }, TIME_RECONNECT_INTERAL);
+        }
     }
 
     private onReceiveGrpcServerKeepAliveReply(): void {
-        this.isConnecting = false;
         if (this.keepAliveHandler === null) {
-            // logger.info('new a keep alive timer.');
             this.keepAliveHandler = setInterval(() => {
                 this.sendSubscriberStatusToGrpcServer();
             }, TIME_KEEP_INTERAL);
@@ -133,7 +132,9 @@ export class GrpcAdapter extends GrpcWorker {
                         if (result !== null) {
                             this.client.submitRequestResult(result, (err, res?) => {
                                 if (!err && res) {
-                                    logger.info('submit req result:' + res.getMessage());
+                                    logger.info('submit req :' + res.getMessage());
+                                } else {
+                                    logger.info('submit req error .');
                                 }
                             });
                         }
@@ -141,6 +142,10 @@ export class GrpcAdapter extends GrpcWorker {
                         this.adaptee.onSubscriberServiceRequest(req);
                     }
                 });
+                stream.on('error', (err) => {
+                    logger.debug('grpc client register stream error:', err.message);
+                    this.waitForDoWorkAgain();
+                })
                 resolve();
             } else {
                 reject(new Error('register error.'));
@@ -156,9 +161,9 @@ export class GrpcAdapter extends GrpcWorker {
                 if (stream) {
                     this.keepAliveStream = stream;
                     if (this.keepAliveHandler === null) {
-                        setTimeout(() => {
-                            this.sendSubscriberStatusToGrpcServer();
-                        }, TIME_DELAY_BIND);
+                        // setTimeout(() => {
+                        this.sendSubscriberStatusToGrpcServer();
+                        // }, TIME_DELAY_BIND);
                     }
                     resolve(stream);
                 } else {
@@ -171,11 +176,11 @@ export class GrpcAdapter extends GrpcWorker {
     private waitForBindSubscriberCompleted(stream: grpc.ClientDuplexStream<ZDSubscriberStatus, ZDResponse>): void {
         logger.debug('wait grpc server bind subscriber completed.');
         stream.on('data', (response: ZDResponse) => {
-            logger.info('recive pong from grpc server', response.getCode());
+            // logger.info('recive pong from grpc server', response.getCode());
             if (response.getCode() === ZDResponse.ERROR_CODE.OK) {
                 this.onReceiveGrpcServerKeepAliveReply();
             } else {
-                logger.debug('bind error:' + response.getMessage());
+                logger.debug('grpc client keep alive bind error:' + response.getMessage());
                 this.waitForDoWorkAgain();
             }
         });

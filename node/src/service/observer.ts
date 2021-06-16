@@ -3,6 +3,7 @@ import { Any } from 'google-protobuf/google/protobuf/any_pb';
 import { SERVICE_TYPE, SERVICE_TYPEMap } from '../lib/proto/wrappers_pb';
 import { ZDServiceRequest } from '../lib/proto/manager_pb'
 import logger from '../lib/utils/logger';
+import { BlockFilter } from '../lib/proto/networkif_pb';
 
 export default class Observer extends GrpcSubscriberAdaptee {
 
@@ -16,19 +17,16 @@ export default class Observer extends GrpcSubscriberAdaptee {
 
     public getSubscriberServiceTypes(): SERVICE_TYPEMap[keyof SERVICE_TYPEMap][] {
         return [
-            SERVICE_TYPE.SERVICE_EXAMPLE_A,
-            SERVICE_TYPE.SERVICE_EXAMPLE_B,
-            SERVICE_TYPE.SERVICE_EXAMPLE_C
+            SERVICE_TYPE.SERVICE_SET_NETWORK
         ];
     }
 
     public onSubscriberServiceRequest(req: ZDServiceRequest): void {
         if (req) {
+            logger.info('receive service req :', req.getType(), req.getSession());
             const type: SERVICE_TYPEMap[keyof SERVICE_TYPEMap] = req.getType();
             switch (type) {
-                case SERVICE_TYPE.SERVICE_EXAMPLE_A:
-                case SERVICE_TYPE.SERVICE_EXAMPLE_B:
-                case SERVICE_TYPE.SERVICE_EXAMPLE_C:
+                case SERVICE_TYPE.SERVICE_SET_NETWORK:
                     this.onReceiveExampleServiceReq(req);
                     break;
             }
@@ -36,13 +34,18 @@ export default class Observer extends GrpcSubscriberAdaptee {
     }
 
     private onReceiveExampleServiceReq(req: ZDServiceRequest) {
-        logger.info('receive req info:', req.getCreatetime(), req.getExpiretime(), req.getSession());
         const data: Any | undefined = req.getData();
         if (data) {
-            // const parameter = data.unpack(YourRequestParameter.deserializeBinary, 'zdautomotive.protobuf.YourRequestParameter');
-            // if (parameter) {
-            //     logger.info(JSON.stringify(parameter.toString()));
-            // }
+            const args = data.unpack(BlockFilter.deserializeBinary, 'zdautomotive.protobuf.BlockFilter');
+            if (args) {
+                logger.info('unpack req args data:',
+                    args.getPhyid(),
+                    args.getVlanid(),
+                    args.getSrcip(),
+                    args.getDstip(),
+                    args.getSrcport(),
+                    args.getDstport());
+            }
         }
     }
 

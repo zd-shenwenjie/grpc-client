@@ -13,13 +13,6 @@ switch (mode) {
     case 'consumer': {
         // Use grpc-client as a consumer
         const client = new NetworkManagerClient('0.0.0.0:5000', grpc.credentials.createInsecure());
-        // const filter: BlockFilter = new BlockFilter();
-        // filter.setPhyid(123);
-        // client.test(filter, (err, res) => {
-        //     if (!err && res) {
-        //         logger.info(res.getVlanid());
-        //     }
-        // })
         const req = new ZDRequest();
         const data: Any = new Any();
         const filter: BlockFilter = new BlockFilter();
@@ -31,8 +24,8 @@ switch (mode) {
         filter.setDstport(123);
         data.pack(filter.serializeBinary(), 'zdautomotive.protobuf.BlockFilter');
         req.setData(data);
-        req.setType(SERVICE_TYPE.SERVICE_EXAMPLE_A);
-        client.send(req, (err, res) => {
+        logger.info(`send req(type:${SERVICE_TYPE.SERVICE_SET_NETWORK}) to grpc server.`)
+        client.setNetwork(req, (err: grpc.ServiceError | null, res: ZDResponse | undefined) => {
             if (!err && res) {
                 const code: ZDResponse.ERROR_CODEMap[keyof ZDResponse.ERROR_CODEMap] = res.getCode();
                 const message: string = res.getMessage();
@@ -49,7 +42,7 @@ switch (mode) {
                     logger.info('res data is null.');
                 }
             } else {
-                logger.info('error', err?.message);
+                logger.info('send req error:', err?.message);
             }
         })
         break;
