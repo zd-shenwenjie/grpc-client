@@ -1,9 +1,12 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#include <iostream>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
+#include <thread>
+#include <functional>
 
 using namespace std;
 
@@ -18,7 +21,7 @@ private:
 public:
     Timer();
     ~Timer();
-    // void setTimeout(std::function<void()>, int delay);
+    void setTimeout(std::function<void()>, int delay);
     void setInterval(std::function<void()>, int interval);
     void stop();
 };
