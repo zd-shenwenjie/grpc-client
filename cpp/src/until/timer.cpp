@@ -14,7 +14,7 @@ Timer::~Timer()
 
 void Timer::setInterval(std::function<void()> function, int interval)
 {
-    if (_expired == false)
+    if (!_expired)
         return;
     _expired = false;
     std::thread([this, interval, function]()
