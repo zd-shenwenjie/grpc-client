@@ -3,7 +3,7 @@
 
 Provider ::Provider()
 {
-    cout << "Provider" << endl;
+    // cout << "Provider" << endl;
     p_service_type = new SERVICE_TYPE[SUB_SERVICE_NUM];
     p_service_type[0] = SERVICE_TYPE::SERVICE_SET_NETWORK;
     p_service_status = new ZDService[SUB_SERVICE_NUM];
@@ -15,7 +15,7 @@ Provider ::Provider()
 
 Provider ::~Provider()
 {
-    cout << "~Provider" << endl;
+    // cout << "~Provider" << endl;
     delete[] p_service_type;
     delete[] p_service_status;
 }

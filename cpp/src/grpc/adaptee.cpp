@@ -3,30 +3,30 @@
 
 GrpcAdaptee::GrpcAdaptee()
 {
-    cout << "GrpcAdaptee" << endl;
+    // cout << "GrpcAdaptee" << endl;
 }
 
 GrpcAdaptee::~GrpcAdaptee()
 {
-    cout << "~GrpcAdaptee" << endl;
+    // cout << "~GrpcAdaptee" << endl;
 }
 
 GrpcSubscriberAdaptee::GrpcSubscriberAdaptee()
 {
-    cout << "GrpcSubscriberAdaptee" << endl;
+    // cout << "GrpcSubscriberAdaptee" << endl;
 }
 
 GrpcSubscriberAdaptee::~GrpcSubscriberAdaptee()
 {
-    cout << "~GrpcSubscriberAdaptee" << endl;
+    // cout << "~GrpcSubscriberAdaptee" << endl;
 }
 
 GrpcProviderAdaptee::GrpcProviderAdaptee()
 {
-    cout << "GrpcProviderAdaptee" << endl;
+    // cout << "GrpcProviderAdaptee" << endl;
 }
 
 GrpcProviderAdaptee::~GrpcProviderAdaptee()
 {
-    cout << "~GrpcProviderAdaptee" << endl;
+    // cout << "~GrpcProviderAdaptee" << endl;
 }

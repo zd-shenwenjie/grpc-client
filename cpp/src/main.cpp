@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
             worker->doWork();
             // Timer *t = new Timer();
             // provider stops working after 5 minutes (This is just for testing unsubscribe)
-            // t->setTimeout([&]() { 
+            // t->setTimeout([&]() {
             //     worker->stopWork();
             //     delete worker;
             //     delete provider;
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
             worker->doWork();
             // Timer *t = new Timer();
             // // observer stops working after 5 minutes (This is just for testing unsubscribe)
-            // t->setTimeout([&]() { 
+            // t->setTimeout([&]() {
             //     worker->stopWork();
             //     delete worker;
             //     delete observer;

@@ -1,12 +1,7 @@
 #ifndef GRPC_ADAPTER_H
 #define GRPC_ADAPTER_H
 
-#include <chrono>
-#include <iostream>
-#include <memory>
-#include <random>
-#include <string>
-#include <thread>
+#include <future>
 
 #include "adaptee.h"
 #include <grpc/grpc.h>
@@ -53,10 +48,10 @@ private:
     GrpcAdaptee *adaptee;
     unique_ptr<zdautomotive::protobuf::ServiceManager::Stub> stub;
     void waitForWorkAgain();
-    void sendPingReqToGrpcServer();
-    void sendRegisterReqToGrpcServer();
-    void sendKeepAliveReqToGrpcServer();
-    void waitForBindSubscriberCompleted();
+    void sendPingReqToGrpcServer(promise<bool> &);
+    void sendRegisterReqToGrpcServer(future<bool> &, promise<bool> &);
+    void sendKeepAliveReqToGrpcServer(future<bool> &, promise<bool> &);
+    void waitForBindSubscriberCompleted(future<bool> &);
     void submitRequestResult(ZDServiceRequestResult &);
 };
 

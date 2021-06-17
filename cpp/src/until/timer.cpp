@@ -2,14 +2,14 @@
 
 Timer::Timer()
 {
-    cout << "Timer" << endl;
+    // cout << "Timer" << endl;
     _expired = true;
     _try_to_expire = false;
 }
 
 Timer::~Timer()
 {
-    cout << "~Timer" << endl;
+    // cout << "~Timer" << endl;
 }
 
 void Timer::setInterval(std::function<void()> function, int interval)
@@ -17,14 +17,14 @@ void Timer::setInterval(std::function<void()> function, int interval)
     if (!_expired)
         return;
     _expired = false;
-    std::thread([this, interval, function]()
+    thread([this, interval, function]()
                 {
                     while (!_try_to_expire)
                     {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+                        this_thread::sleep_for(chrono::milliseconds(interval));
                         function();
                     }
-                    std::lock_guard<std::mutex> locker(mut);
+                    lock_guard<std::mutex> locker(mut);
                     _expired = true;
                     cv.notify_one();
                 })
@@ -33,9 +33,9 @@ void Timer::setInterval(std::function<void()> function, int interval)
 
 void Timer::setTimeout(std::function<void()> function, int delay)
 {
-    std::thread([delay, function]()
+    thread([delay, function]()
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+                    this_thread::sleep_for(chrono::milliseconds(delay));
                     function();
                 })
         .detach();
@@ -48,7 +48,7 @@ void Timer::clearInterval()
     if (_try_to_expire)
         return;
     _try_to_expire = true;
-    std::unique_lock<std::mutex> locker(mut);
+    unique_lock<mutex> locker(mut);
     cv.wait(locker, [this]
             { return _expired == true; });
     if (_expired == true)

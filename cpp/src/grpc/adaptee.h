@@ -1,7 +1,6 @@
 #ifndef GRPC_ADAPTEE_H
 #define GRPC_ADAPTEE_H
 
-#include <string>
 #include "manager.grpc.pb.h"
 
 using namespace std;

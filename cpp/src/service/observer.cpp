@@ -3,14 +3,14 @@
 
 Observer::Observer()
 {
-    cout << "Observer" << endl;
+    // cout << "Observer" << endl;
     p_service_type = new SERVICE_TYPE[SUB_SERVICE_NUM];
     p_service_type[0] = SERVICE_TYPE::SERVICE_SET_NETWORK;
 }
 
 Observer::~Observer()
 {
-    cout << "~Observer" << endl;
+    // cout << "~Observer" << endl;
 }
 
 string Observer::getSubscriberId() const
