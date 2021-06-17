@@ -17,36 +17,36 @@
 #include "manager.grpc.pb.h"
 
 using namespace std;
+using google::protobuf::Any;
+using google::protobuf::Empty;
+using google::protobuf::StringValue;
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::ClientReader;
 using grpc::ClientReaderWriter;
 using grpc::ClientWriter;
 using grpc::Status;
+using zdautomotive::protobuf::SERVICE_TYPE;
 using zdautomotive::protobuf::ZDRequest;
 using zdautomotive::protobuf::ZDResponse;
-using zdautomotive::protobuf::ZDServiceSubscriber;
 using zdautomotive::protobuf::ZDServiceRequest;
-using zdautomotive::protobuf::SERVICE_TYPE;
+using zdautomotive::protobuf::ZDServiceSubscriber;
 using zdautomotive::protobuf::ZDServiceSubscriber_SUBSCRIBER_TYPE;
-using google::protobuf::Any;
-using google::protobuf::Empty;
-using google::protobuf::StringValue;
 class GrpcWorker
 {
 public:
     GrpcWorker();
     virtual ~GrpcWorker();
-    virtual void doWork()  = 0;
-    virtual void stopWork()  = 0;
+    virtual void doWork() = 0;
+    virtual void stopWork() = 0;
 };
 class GrpcAdapter : public GrpcWorker
 {
 public:
     GrpcAdapter(GrpcAdaptee *);
     ~GrpcAdapter();
-    virtual void doWork() ;
-    virtual void stopWork() ;
+    virtual void doWork();
+    virtual void stopWork();
 
 private:
     bool isWaitForWorkAgain;
@@ -57,6 +57,7 @@ private:
     void sendRegisterReqToGrpcServer();
     void sendKeepAliveReqToGrpcServer();
     void waitForBindSubscriberCompleted();
+    void submitRequestResult(ZDServiceRequestResult &);
 };
 
 #endif

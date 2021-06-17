@@ -2,9 +2,9 @@
 
 Timer::Timer()
 {
+    cout << "Timer" << endl;
     _expired = true;
     _try_to_expire = false;
-    cout << "Timer" << endl;
 }
 
 Timer::~Timer()

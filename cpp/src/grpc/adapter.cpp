@@ -36,7 +36,7 @@ GrpcAdapter::~GrpcAdapter()
 void GrpcAdapter::doWork()
 {
     // sendPingReqToGrpcServer();
-    sendRegisterReqToGrpcServer();
+    // sendRegisterReqToGrpcServer();
     // sendKeepAliveReqToGrpcServer();
     // waitForBindSubscriberCompleted();
 }
@@ -44,18 +44,17 @@ void GrpcAdapter::doWork()
 void GrpcAdapter::stopWork()
 {
     cout << "observer stop work" << endl;
-    
 }
 
 void GrpcAdapter::waitForWorkAgain()
 {
-    if(isWaitForWorkAgain) {
-    cout << "wait For do Work again" << endl;
-    Timer t;
-    t.setTimeout([&]() { 
-        doWork();
-    }, 10 * 1000);
-
+    if (isWaitForWorkAgain)
+    {
+        cout << "wait For do Work again" << endl;
+        Timer t;
+        t.setTimeout([&]()
+                     { doWork(); },
+                     10 * 1000);
     }
 }
 
@@ -83,53 +82,107 @@ void GrpcAdapter::sendRegisterReqToGrpcServer()
     ClientContext context;
     ZDServiceSubscriber subscriber;
     string subscriberId = adaptee->getSubscriberId();
+    cout << "subscriberId:" << subscriberId << endl;
     subscriber.set_id(subscriberId);
-    // ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
-    // ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER
-    // subscriber.set_type(subscriberType);
+    ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
+    cout << "subscriberType:" << subscriberType << endl;
+    subscriber.set_type(subscriberType);
+    SERVICE_TYPE *p_service_type = adaptee->getSubscriberServiceTypes();
+    int sub_service_num = adaptee->getSubscriberServiceTypesNum();
+    for (int i = 0; i < sub_service_num; i++)
+    {
+        subscriber.add_servicetype(p_service_type[i]);
+        cout << "add_servicetype:" << p_service_type[i] << endl;
+        p_service_type++;
+    }
     ZDServiceRequest request;
     unique_ptr<ClientReader<ZDServiceRequest>> reader(stub->subscribe(&context, subscriber));
-    while (reader->Read(&request)) {
-    //   std::cout << "Found feature called " << feature.name() << " at "
-    //             << feature.location().latitude() / kCoordFactor_ << ", "
-    //             << feature.location().longitude() / kCoordFactor_ << std::endl;
+    while (reader->Read(&request))
+    {
+        if (adaptee != NULL)
+        {
+            cout << "handle req by subscriber type:" << subscriberType << endl;
+            if (subscriberType == ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER)
+            {
+                ZDServiceRequestResult result = ((Provider *)adaptee)->onSubscriberServiceRequest(request);
+                submitRequestResult(result);
+            }
+            else
+            {
+                ((Observer *)adaptee)->onSubscriberServiceRequest(request);
+            }
+        }
     }
-    Status status = reader->Finish();
-    if (status.ok()) {
-      cout << "send register req succeeded." << endl;
-    } else {
-      cout << "send register req failed." << endl;
-    }
-    // if (adaptee != NULL)
+    // Status status = reader->Finish();
+    // if (status.ok())
     // {
-    //     cout << adaptee->getSubscriberType() << endl;
-    //     cout << adaptee->getSubscriberId() << endl;
-    //     int subscriberType = adaptee->getSubscriberType();
-    //     if (subscriberType)
-    //     {
-    //         string str = ((Provider *)adaptee)->onSubscriberServiceRequest("some req2");
-    //         cout << str << endl;
-    //     }
-    //     else
-    //     {
-    //         ((Observer *)adaptee)->onSubscriberServiceRequest("some req1");
-    //     }
+    //     cout << "finish register stream succeeded." << endl;
     // }
+}
+
+void GrpcAdapter::submitRequestResult(ZDServiceRequestResult &result)
+{
+    ClientContext context;
+    ZDResponse res;
+    Status status = stub->submitRequestResult(&context, result, &res);
+    if (!status.ok())
+    {
+        cout << "submit req grpc server failed." << endl;
+    }
+    else
+    {
+        cout << "submit req grpc server successed." << endl;
+        cout << "code:" << res.code() << endl;
+        cout << "message:" << res.message() << endl;
+    }
 }
 
 void GrpcAdapter::sendKeepAliveReqToGrpcServer()
 {
-    cout << "sendKeepAliveReqToGrpcServer" << endl;
-    // Timer t = new Timer();
-    // t.setInterval([&]() {
-    //     cout << "Hey.. helloworld" << endl;
-    // }, 1000);
-    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    // t.clearInterval();
-    // cout << "Hey.." << endl;
+    cout << "send keep alive req to grpc server." << endl;
+    ClientContext context;
+    shared_ptr<ClientReaderWriter<ZDSubscriberStatus, ZDResponse>> stream(stub->keepAlive(&context));
+    ZDSubscriberStatus subscriber_status;
+    string subscriberId = adaptee->getSubscriberId();
+    subscriber_status.set_id(subscriberId);
+    ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
+    if (subscriberType == ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER)
+    {
+        ZDService *p_service_status = ((Provider *)adaptee)->getCurrentServiceStatus();
+        int sub_service_num = adaptee->getSubscriberServiceTypesNum();
+        for (int i = 0; i < sub_service_num; i++)
+        {
+            ZDService *p_service = subscriber_status.add_service();
+            SERVICE_TYPE service_type = p_service_status->type();
+            ZDService_SERVICE_STATUS service_status = p_service_status->status();
+            p_service->set_type(service_type);
+            p_service->set_status(service_status);
+            p_service_status++;
+            cout << "add_service:" << service_type << "," << service_status << endl;
+        }
+    }
+    stream->Write(subscriber_status);
+    stream->WritesDone();
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    ZDResponse res;
+    while (stream->Read(&res))
+    {
+        cout << "get response from keep alive stream ... " << endl;
+        cout << "code:" << res.code() << endl;
+        cout << "message:" << res.message() << endl;
+    }
+    // Status status = stream->Finish();
+    // if (!status.ok())
+    // {
+    //     cout << "finish keep alive stream failed." << endl;
+    // }
 }
 
 void GrpcAdapter::waitForBindSubscriberCompleted()
 {
     cout << "waitForBindSubscriberCompleted" << endl;
+    // Timer t = new Timer();
+    // t.setInterval([&]() { }, 10 * 1000);
+    // t.clearInterval();
 }

@@ -30,9 +30,9 @@ using zdautomotive::protobuf::ZDResponse;
 void setNetwork(const ZDRequest &req, ZDResponse *res)
 {
     std::shared_ptr<Channel> channel = grpc::CreateChannel("localhost:5000", grpc::InsecureChannelCredentials());
-    std::unique_ptr<zdautomotive::protobuf::NetworkManager::Stub> stub_ = zdautomotive::protobuf::NetworkManager::NewStub(channel);
+    std::unique_ptr<zdautomotive::protobuf::NetworkManager::Stub> stub = zdautomotive::protobuf::NetworkManager::NewStub(channel);
     ClientContext context;
-    Status status = stub_->setNetwork(&context, req, res);
+    Status status = stub->setNetwork(&context, req, res);
     if (!status.ok())
     {
         cout << "send rpc failed." << endl;
@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
             GrpcAdaptee *observer = new Observer();
             GrpcWorker *worker = new GrpcAdapter(observer);
             worker->doWork();
-            Timer *t = new Timer();
-            // observer stops working after 5 minutes (This is just for testing unsubscribe)
-            t->setTimeout([&]() { 
-                worker->stopWork();
-                delete worker;
-                delete observer;
-                delete t;
-            }, 5 * 60 * 1000);
+            // Timer *t = new Timer();
+            // // observer stops working after 5 minutes (This is just for testing unsubscribe)
+            // t->setTimeout([&]() { 
+            //     worker->stopWork();
+            //     delete worker;
+            //     delete observer;
+            //     delete t;
+            // }, 5 * 60 * 1000);
         }
     }
     while(getchar()!='\n');

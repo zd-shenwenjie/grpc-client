@@ -60,7 +60,7 @@ export default class Provider extends GrpcProviderAdaptee {
                 const result: ZDServiceRequestResult = new ZDServiceRequestResult();
                 const response: ZDResponse = new ZDResponse();
                 response.setCode(ZDResponse.ERROR_CODE.OK);
-                response.setMessage('send req success.');
+                response.setMessage('send req successfully.');
                 const anyData: Any = new Any();
                 const parameter: ProtocolTag = new ProtocolTag();
                 parameter.setVlanid(456);
