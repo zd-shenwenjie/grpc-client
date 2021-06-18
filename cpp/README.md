@@ -39,7 +39,13 @@ popd
 
 #### How to run
 ```
- ./grpc-client -consumer
- ./grpc-client -observer
- ./grpc-client -provider
+ ./cmake/build/grpc-client -consumer
+ ./cmake/build/grpc-client -observer
+ ./cmake/build/grpc-client -provider
+```
+or
+```
+ ./cmake/build_arm/grpc-client -consumer
+ ./cmake/build_arm/grpc-client -observer
+ ./cmake/build_arm/grpc-client -provider
 ```
