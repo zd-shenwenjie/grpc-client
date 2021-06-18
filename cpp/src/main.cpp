@@ -91,8 +91,5 @@ int main(int argc, char *argv[])
             // delete observer;
         }
     }
-    cout << "hello world" << endl;
-    while (getchar() != '\n')
-        ;
     return 0;
 }
