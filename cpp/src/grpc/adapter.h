@@ -51,10 +51,8 @@ private:
     void waitForWorkAgain();
     void sendPingReqToGrpcServer(promise<bool> &);
     void sendRegisterReqToGrpcServer(future<bool> &, promise<bool> &);
-    void sendKeepAliveReqToGrpcServer(future<bool> &, promise<bool> &);
-    void waitForBindSubscriberCompleted(future<bool> &);
+    void sendKeepAliveReqToGrpcServer(future<bool> &);
     void submitRequestResult(ZDServiceRequestResult &);
-    void sendSubscriberStatusToGrpcServer();
     void sendUnregisterReqToGrpcServer();
 };
 

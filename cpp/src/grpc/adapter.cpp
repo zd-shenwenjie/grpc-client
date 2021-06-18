@@ -49,12 +49,10 @@ void GrpcAdapter::doWork()
     future<bool> future_keep_alive = promise_keep_alive.get_future();
     thread t1(&GrpcAdapter::sendPingReqToGrpcServer, this, ref(promise_ping));
     thread t2(&GrpcAdapter::sendRegisterReqToGrpcServer, this, ref(future_ping), ref(promise_register));
-    thread t3(&GrpcAdapter::sendKeepAliveReqToGrpcServer, this, ref(future_register), ref(promise_keep_alive));
-    thread t4(&GrpcAdapter::waitForBindSubscriberCompleted, this, ref(future_keep_alive));
+    thread t3(&GrpcAdapter::sendKeepAliveReqToGrpcServer, this, ref(future_register));
     t1.join();
     t2.join();
     t3.join();
-    t4.join();
 }
 
 void GrpcAdapter::stopWork()
@@ -190,7 +188,7 @@ void GrpcAdapter::submitRequestResult(ZDServiceRequestResult &result)
     }
 }
 
-void GrpcAdapter::sendKeepAliveReqToGrpcServer(future<bool> &future_register, promise<bool> &promise_keep_alive)
+void GrpcAdapter::sendKeepAliveReqToGrpcServer(future<bool> &future_register)
 {
     bool is_register_success = future_register.get();
     if (!is_register_success)
@@ -200,90 +198,51 @@ void GrpcAdapter::sendKeepAliveReqToGrpcServer(future<bool> &future_register, pr
     cout << "send keep alive req to grpc server." << endl;
     ClientContext context;
     shared_ptr<ClientReaderWriter<ZDSubscriberStatus, ZDResponse>> stream(stub->keepAlive(&context));
-    ZDSubscriberStatus subscriber_status;
-    string subscriberId = adaptee->getSubscriberId();
-    subscriber_status.set_id(subscriberId);
-    ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
-    if (subscriberType == ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER)
-    {
-        ZDService *p_service_status = ((Provider *)adaptee)->getCurrentServiceStatus();
-        int sub_service_num = adaptee->getSubscriberServiceTypesNum();
-        for (int i = 0; i < sub_service_num; i++)
-        {
-            ZDService *p_service = subscriber_status.add_service();
-            SERVICE_TYPE service_type = p_service_status->type();
-            ZDService_SERVICE_STATUS service_status = p_service_status->status();
-            p_service->set_type(service_type);
-            p_service->set_status(service_status);
-            p_service_status++;
-            // cout << "add_service:" << service_type << "," << service_status << endl;
-        }
-    }
-    stream->Write(subscriber_status);
-    // stream->WritesDone();
-    promise_keep_alive.set_value(true);
-    ZDResponse res;
-    while (stream->Read(&res))
-    {
-        cout << "get response from keep alive stream ... "
-             << "code:" << res.code() << ","
-             << "message:" << res.message() << endl;
-    }
+    thread writer([&]()
+                  {
+                      while (!isWaitForWorkAgain)
+                      {
+                          ZDSubscriberStatus subscriber_status;
+                          string subscriberId = adaptee->getSubscriberId();
+                          subscriber_status.set_id(subscriberId);
+                          ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
+                          if (subscriberType == ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER)
+                          {
+                              ZDService *p_service_status = ((Provider *)adaptee)->getCurrentServiceStatus();
+                              int sub_service_num = adaptee->getSubscriberServiceTypesNum();
+                              for (int i = 0; i < sub_service_num; i++)
+                              {
+                                  ZDService *p_service = subscriber_status.add_service();
+                                  SERVICE_TYPE service_type = p_service_status->type();
+                                  ZDService_SERVICE_STATUS service_status = p_service_status->status();
+                                  p_service->set_type(service_type);
+                                  p_service->set_status(service_status);
+                                  p_service_status++;
+                                  // cout << "add_service:" << service_type << "," << service_status << endl;
+                              }
+                          }
+                          stream->Write(subscriber_status);
+                          this_thread::sleep_for(chrono::milliseconds(10 * 1000));
+                      }
+                      stream->WritesDone();
+                  });
+    thread reader([&]()
+                  {
+                      ZDResponse res;
+                      while (stream->Read(&res))
+                      {
+                          cout << "get response from keep alive stream ... "
+                               << "code:" << res.code() << ","
+                               << "message:" << res.message() << endl;
+                      }
+                  });
+    isClearInterval = false;
+    writer.join();
+    reader.join();
     Status status = stream->Finish();
     if (!status.ok())
     {
         cout << "finish keep alive stream failed." << endl;
         waitForWorkAgain();
     }
-}
-
-void GrpcAdapter::waitForBindSubscriberCompleted(future<bool> &future_keep_alive)
-{
-    bool is_keep_alive_success = future_keep_alive.get();
-    if (!is_keep_alive_success)
-    {
-        return;
-    }
-    cout << "wait grpc server bind subscriber completed." << endl;
-    isClearInterval = false;
-    thread([&]()
-           {
-               while (!isClearInterval)
-               {
-                   this_thread::sleep_for(chrono::milliseconds(10 * 1000));
-                   sendSubscriberStatusToGrpcServer();
-               }
-           })
-        .detach();
-}
-
-void GrpcAdapter::sendSubscriberStatusToGrpcServer()
-{
-    if (isWaitForWorkAgain)
-    {
-        return;
-    }
-    cout << "send grpc subscriber status to grpc server." << endl;
-    // ClientContext context;
-    // shared_ptr<ClientReaderWriter<ZDSubscriberStatus, ZDResponse>> stream(stub->keepAlive(&context));
-    // ZDSubscriberStatus subscriber_status;
-    // string subscriberId = adaptee->getSubscriberId();
-    // subscriber_status.set_id(subscriberId);
-    // ZDServiceSubscriber_SUBSCRIBER_TYPE subscriberType = adaptee->getSubscriberType();
-    // if (subscriberType == ZDServiceSubscriber_SUBSCRIBER_TYPE::ZDServiceSubscriber_SUBSCRIBER_TYPE_PROVIDER)
-    // {
-    //     ZDService *p_service_status = ((Provider *)adaptee)->getCurrentServiceStatus();
-    //     int sub_service_num = adaptee->getSubscriberServiceTypesNum();
-    //     for (int i = 0; i < sub_service_num; i++)
-    //     {
-    //         ZDService *p_service = subscriber_status.add_service();
-    //         SERVICE_TYPE service_type = p_service_status->type();
-    //         ZDService_SERVICE_STATUS service_status = p_service_status->status();
-    //         p_service->set_type(service_type);
-    //         p_service->set_status(service_status);
-    //         p_service_status++;
-    //         // cout << "add_service:" << service_type << "," << service_status << endl;
-    //     }
-    // }
-    // stream->Write(subscriber_status);
 }
