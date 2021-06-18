@@ -98,12 +98,11 @@ add_library(
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.h"
   "${CMAKE_CURRENT_LIST_DIR}/src/grpc/adapter.cpp"
 )
-# 设置target需要链接的库
+# 设置adapter需要链接的库
 target_link_libraries(
   grpc_adapter 
   grpc_service
   grpc_proto
-  until
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
@@ -121,13 +120,10 @@ add_library(
 target_link_libraries(
   grpc_service 
   grpc_adapter
-)
-
-# 生成until静态库
-add_library(
-  until
-  "${CMAKE_CURRENT_LIST_DIR}/src/until/timer.h"
-  "${CMAKE_CURRENT_LIST_DIR}/src/until/timer.cpp"
+  grpc_proto
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF}
 )
 
 # 生成可执行文件
@@ -138,7 +134,6 @@ target_link_libraries(
   grpc_adapter 
   grpc_service
   grpc_proto
-  until
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}

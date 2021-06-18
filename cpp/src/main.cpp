@@ -5,7 +5,6 @@
 #include "./grpc/adaptee.h"
 #include "./service/observer.h"
 #include "./service/provider.h"
-#include "./until/timer.h"
 
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
@@ -78,30 +77,22 @@ int main(int argc, char *argv[])
             GrpcAdaptee *provider = new Provider();
             GrpcWorker *worker = new GrpcAdapter(provider);
             worker->doWork();
-            // Timer *t = new Timer();
-            // provider stops working after 5 minutes (This is just for testing unsubscribe)
-            // t->setTimeout([&]() {
-            //     worker->stopWork();
-            //     delete worker;
-            //     delete provider;
-            //     delete t;
-            // }, 5 * 60 * 1000);
+            // worker->stopWork();
+            // delete worker;
+            // delete provider;
         }
         else if (role == "-observer")
         {
             GrpcAdaptee *observer = new Observer();
             GrpcWorker *worker = new GrpcAdapter(observer);
             worker->doWork();
-            // Timer *t = new Timer();
-            // // observer stops working after 5 minutes (This is just for testing unsubscribe)
-            // t->setTimeout([&]() {
-            //     worker->stopWork();
-            //     delete worker;
-            //     delete observer;
-            //     delete t;
-            // }, 5 * 60 * 1000);
+            // worker->stopWork();
+            // delete worker;
+            // delete observer;
         }
     }
-    while(getchar()!='\n');
+    cout << "hello world" << endl;
+    while (getchar() != '\n')
+        ;
     return 0;
 }

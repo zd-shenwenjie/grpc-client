@@ -45,6 +45,7 @@ public:
 
 private:
     bool isWaitForWorkAgain;
+    bool isClearInterval;
     GrpcAdaptee *adaptee;
     unique_ptr<zdautomotive::protobuf::ServiceManager::Stub> stub;
     void waitForWorkAgain();
@@ -53,6 +54,8 @@ private:
     void sendKeepAliveReqToGrpcServer(future<bool> &, promise<bool> &);
     void waitForBindSubscriberCompleted(future<bool> &);
     void submitRequestResult(ZDServiceRequestResult &);
+    void sendSubscriberStatusToGrpcServer();
+    void sendUnregisterReqToGrpcServer();
 };
 
 #endif
