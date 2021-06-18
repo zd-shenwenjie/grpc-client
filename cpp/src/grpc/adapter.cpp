@@ -222,7 +222,7 @@ void GrpcAdapter::sendKeepAliveReqToGrpcServer(future<bool> &future_register)
                               }
                           }
                           stream->Write(subscriber_status);
-                          this_thread::sleep_for(chrono::milliseconds(10 * 1000));
+                          this_thread::sleep_for(chrono::milliseconds(30 * 1000));
                       }
                       stream->WritesDone();
                   });
